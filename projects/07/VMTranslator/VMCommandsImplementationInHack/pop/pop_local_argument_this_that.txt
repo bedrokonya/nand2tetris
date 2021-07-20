@@ -1,0 +1,20 @@
+// pop segment i
+// where segment = local/argument/this/that
+// When used in runtime the content of curly brackets {} is removed via CommandTranslationProvider
+// and the string with content of this file needs to be formatted in order to be valid asm program:
+//           ' ..this file content.. '.format(i, segment_asm)
+// where segment_asm == LCL/ARG/THIS/THAT
+
+@{i}
+D=A
+@{segment}
+D=M+D
+@addr
+M=D
+@SP
+M=M-1
+A=M
+D=M
+@addr
+A=M
+M=D
