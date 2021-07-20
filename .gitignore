@@ -8,3 +8,4 @@ projects/07/VMTranslator/include/
 projects/07/VMTranslator/lib/
 projects/07/VMTranslator/.idea/
 projects/07/VMTranslator/pyvenv.cfg
+*.hack
