@@ -9,3 +9,7 @@ projects/07/VMTranslator/lib/
 projects/07/VMTranslator/.idea/
 projects/07/VMTranslator/pyvenv.cfg
 *.hack
+*.asm
+*.out
+*.pyc
+
