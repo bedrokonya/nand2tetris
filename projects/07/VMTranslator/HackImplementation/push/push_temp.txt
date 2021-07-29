@@ -1,0 +1,18 @@
+// push temp i
+// When used in runtime the content of curly brackets is removed via CommandTranslationProvider
+// and the string with content of this file needs to be formatted in order to be valid asm program:
+//           ' ..this file content.. '.format(i, segment_addr)
+// where segment_addr is base location of temp segment in RAM
+
+@{i}
+D=A
+@{segment_addr}
+D=D+A
+A=D
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+

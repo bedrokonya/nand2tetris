@@ -1,0 +1,59 @@
+// call func_name n_args
+
+@return-address{func_name}{counter}
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1      // push return-address
+
+@LCL
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1   // push LCL
+
+@ARG
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1   // push ARG
+
+@THIS
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1   // push THIS
+
+@THAT
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1   // push THAT
+
+@{n_args}
+D=A
+@n_args
+MD=D     // n_args=...
+@5
+D=D+A
+@SP
+D=M-D
+@ARG
+M=D     // ARG=SP - n_args - 5
+@SP
+D=M
+@LCL
+M=D     // LCL = SP
+@{func_name}
+0;JMP       // goto func_name
+(return-address{func_name}{counter})

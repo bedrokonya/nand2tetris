@@ -1,0 +1,32 @@
+// function func_name n_locals
+
+({func_name})
+@{n_locals}
+D=A
+@n_locals
+M=D     // n_locals=k
+
+@0
+D=A
+@i
+M=D     // i=0
+
+(INITLOOP{func_name})
+
+    @i
+    M=M+1       // i++
+    D=M
+    @n_locals
+    D=M-D       // D = k - i
+    @ENDINIT{func_name}
+    D;JLT
+
+    @SP
+    A=M
+    M=0
+    @SP
+    M=M+1
+    @INITLOOP{func_name}
+    0;JMP
+
+(ENDINIT{func_name})

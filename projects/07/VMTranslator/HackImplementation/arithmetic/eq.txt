@@ -1,0 +1,29 @@
+// When used in runtime the content of curly brackets is removed via CommandTranslationProvider
+// and the string with content of this file needs to be formatted in order to be valid asm program:
+//          ' ..this file content.. '.format(x, x, x, x)
+// where x is any arbitrary number
+
+@SP
+A=M-1
+D=M         // D = *(SP-1)
+A=A-1
+D=M-D       // D = *(SP-2) - *(SP-1)
+@EQ{x}
+D;JEQ       // if *(SP-2) == *(SP-1), then go to EQ{x}, else D=0 (aka false) and go to EQWRITERESULT{x}
+@0
+D=A         // D = 0000 0000 0000 0000
+@EQWRITERESULT{x}
+0;JMP
+
+(EQ{x})
+    D=-1    // D= 0111 1111 1111 1111 (aka true)
+
+(EQWRITERESULT{x}) // writes results of eq on the stack and moves SP
+    @SP
+    A=M-1
+    A=A-1
+    M=D
+    @SP
+    M=M-1
+
+

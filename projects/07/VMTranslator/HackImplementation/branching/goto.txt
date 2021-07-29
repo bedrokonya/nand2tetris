@@ -1,0 +1,9 @@
+// goto label_name
+
+// When used in runtime the content of curly brackets is removed via CommandTranslationProvider
+// and the string with content of this file needs to be formatted in order to be valid asm program:
+//           ' ..this file content.. '.format(function_name, label_name)
+// where function_name is name of the function which is currently executed
+
+@{function_name}${label_name}
+0;JMP

@@ -326,10 +326,10 @@ M=D
 @SP
 M=M+1
 @SP
-A = M-1
-D = M
-A = A-1
-M = D+M
+A=M-1
+D=M
+A=A-1
+M=D+M
 @SP
 M=M-1
 @112
@@ -340,12 +340,12 @@ M=D
 @SP
 M=M+1
 @SP
-A = M-1
-D = M
-A = A-1
-M = M-D
+A=M-1
+D=M
+A=A-1
+M=M-D
 @SP
-M = M-1
+M=M-1
 @SP
 A=M-1
 M=-M
@@ -371,5 +371,5 @@ M=D|M
 @SP
 M=M-1
 @SP
-A = M-1
-M = !M
+A=M-1
+M=!M

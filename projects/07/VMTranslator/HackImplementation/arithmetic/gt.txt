@@ -1,0 +1,25 @@
+//gt
+// same as eq.asm, but different labels and conditions of jump in line 8 (D; JGT)
+@SP
+A=M-1
+D=M
+A=A-1
+D=M-D
+@GT{x}
+D;JGT
+@0
+D=A
+@GTWRITERESULT{x}
+0;JMP
+
+(GT{x})
+    D=-1
+
+(GTWRITERESULT{x})
+    @SP
+    A=M-1
+    A=A-1
+    M=D
+    @SP
+    M=M-1
+

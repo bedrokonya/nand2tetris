@@ -1,0 +1,61 @@
+// return
+
+@LCL
+D=M
+@endFrame
+MD=D     // endFrame = LCL
+
+
+@5
+A=D-A
+D=M     // D = *(frame-5)
+@retAddr
+M=D     // retAddr = *(frame-5)
+
+@SP
+A=M-1
+D=M     // D = return value
+
+@ARG
+A=M
+M=D     // *ARG = return value
+
+@ARG
+D=M     // D = *ARG
+
+@SP
+M=D+1       // SP = ARG+1
+
+@endFrame
+M=M-1      // endFrame--
+A=M
+D=M     // D = *(endFrame)
+@THAT
+M=D     // THAT = *(endFrame)
+
+@endFrame
+M=M-1       // endFrame--
+A=M
+D=M
+@THIS       // THIS = *(endFrame)
+M=D
+
+@endFrame
+M=M-1       // endFrame--
+A=M
+D=M
+@ARG        // ARG = *(endFrame)
+M=D
+
+@endFrame
+M=M-1       // endFrame--
+A=M
+D=M
+@LCL        // LCL = *(endFrame)
+M=D
+
+@retAddr
+A=M
+0;JMP
+
+

@@ -1,40 +1,62 @@
 import sys
+import os
 
-from ParserHelper import ParserHelper
-from VMCommandType import VMCommandType
+import OsPathHelper
+import ParserHelper
 from VMParser import VMParser
 from VMCodeWriter import VMCodeWriter
 
 
 class VMTranslator:
-    def __init__(self, file_directory):
-        self.parser = VMParser(file_directory)
-        self.code_writer = VMCodeWriter()
-        self.code_writer.setFileName(file_directory)
+    def __init__(self, vm_file_directory):
+
+        # calculating the name os the resulting .asm file
+        # and finding the files which needed to be translated
+        self.files_to_process = []
+        self.is_bootstrap_needed = False
+
+        if os.path.isfile(vm_file_directory):
+
+            self.asm_file_name = OsPathHelper.removeExtension(vm_file_directory)
+            if OsPathHelper.getExtension(vm_file_directory) == 'vm':
+                self.files_to_process.append(vm_file_directory)
+
+        elif os.path.isdir(vm_file_directory):
+            self.is_bootstrap_needed = True
+            basename = vm_file_directory.rsplit(os.sep, maxsplit=1)[-1]
+            self.asm_file_name = vm_file_directory + os.sep + basename
+
+            for filename in os.listdir(vm_file_directory):
+                if OsPathHelper.getExtension(filename) == 'vm':
+                    self.files_to_process.append(vm_file_directory + os.sep + filename)
+
+        if len(self.files_to_process) == 0:
+            print(f'Nothing to translate in the passed directory: {vm_file_directory}')
+            sys.exit(1)
+
+        self.asm_file_name += '.asm'
+        print(f'Resulting .asm file name: {self.asm_file_name}')
+
+        self.code_writer = VMCodeWriter(self.asm_file_name, self.is_bootstrap_needed)
+        self.parser = None
 
     def translate(self):
 
-        while self.parser.hasMoreCommands():
+        for filename in self.files_to_process:
+            self.parser = VMParser(filename)
+            self.code_writer.setFileName(filename)
 
-            self.parser.advance()
-            if ParserHelper.is_comment_or_empty(self.parser.current_command):
-                continue
+            while self.parser.hasMoreCommands():
 
-            current_command_type = self.parser.getCurrentCommandType()
+                self.parser.advance()
+                if ParserHelper.is_comment_or_empty(self.parser.current_command):
+                    continue
 
-            if current_command_type == VMCommandType.C_ARITHMETIC:
-                self.code_writer.writeArithmetic(self.parser.currentCommandArg0(), self.parser.current_command_index)
-
-            elif current_command_type == VMCommandType.C_PUSH or current_command_type == VMCommandType.C_POP:
-                self.code_writer.writePushPop(current_command_type, self.parser.currentCommandArg0(),
+                self.code_writer.writeCommand(self.parser.getCurrentCommandArg0(),
                                               self.parser.getCurrentCommandArg1(),
                                               self.parser.getCurrentCommandArg2())
-            else:
-                # TODO
-                print(f'Command {self.parser.currentCommandArg0()} not implemented yet')
-                sys.exit(1)
 
-        self.code_writer.write_asm_file()
+        self.code_writer.writeAsmFile()
 
 
 if __name__ == "__main__":

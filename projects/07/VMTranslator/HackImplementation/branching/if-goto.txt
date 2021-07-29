@@ -1,0 +1,15 @@
+// if-goto label_name
+
+// When used in runtime the content of curly brackets is removed via CommandTranslationProvider
+// and the string with content of this file needs to be formatted in order to be valid asm program:
+//           ' ..this file content.. '.format(function_name, label_name)
+// where function_name is name of the function which is currently executed
+
+
+@SP
+A=M-1
+D=M         // D = *(SP-1)
+@SP
+M=M-1       // SP--
+@{function_name}${label_name}
+D;JNE

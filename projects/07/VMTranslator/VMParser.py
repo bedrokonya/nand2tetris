@@ -1,14 +1,18 @@
-from ParserHelper import ParserHelper
-from VMCommandType import VMCommandType
+import ParserHelper
 
 
 class VMParser:
 
-    def __init__(self, file_name):
-        self.file_name = file_name
+    def __init__(self, filename):
+
+        self.filename = filename
         self.current_command_index = -1
         self.current_command = None
-        with open(file_name) as f:
+        self.current_arg0 = None
+        self.current_arg1 = None
+        self.current_arg2 = None
+
+        with open(filename) as f:
             self.commands = f.readlines()
 
     def hasMoreCommands(self):
@@ -18,23 +22,16 @@ class VMParser:
         self.current_command_index += 1
         self.current_command = ParserHelper.normalize(self.commands[self.current_command_index])
 
-    def currentCommandArg0(self):
-        return self.current_command.split(' ')[0]
+        tokens = self.current_command.split(' ')
+        self.current_arg0 = tokens[0]
+        self.current_arg1 = tokens[1] if len(tokens) > 1 else ''
+        self.current_arg2 = tokens[2] if len(tokens) > 2 else ''
+
+    def getCurrentCommandArg0(self):
+        return self.current_arg0
 
     def getCurrentCommandArg1(self):
-        return self.current_command.split(' ')[1]
+        return self.current_arg1
 
     def getCurrentCommandArg2(self):
-        return self.current_command.split(' ')[2]
-
-    def getCurrentCommandType(self):
-        command_name = self.currentCommandArg0()
-        if command_name in ['add', 'and', 'eq', 'gt', 'lt', 'neg', 'not', 'or', 'sub']:
-            return VMCommandType.C_ARITHMETIC
-        elif command_name == 'push':
-            return VMCommandType.C_PUSH
-        elif command_name == 'pop':
-            return VMCommandType.C_POP
-        else:
-            # TODO
-            raise Exception(f'Command {command_name} not implemented yet')
+        return self.current_arg2
