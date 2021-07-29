@@ -1,3 +1,7 @@
+*.hack
+*.asm
+*.out
+*.pyc
 projects/06/assembler/bin/
 projects/06/assembler/include/
 projects/06/assembler/lib/
@@ -8,8 +12,4 @@ projects/07/VMTranslator/include/
 projects/07/VMTranslator/lib/
 projects/07/VMTranslator/.idea/
 projects/07/VMTranslator/pyvenv.cfg
-*.hack
-*.asm
-*.out
-*.pyc
 
