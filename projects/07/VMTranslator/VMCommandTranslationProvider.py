@@ -7,17 +7,17 @@ class VMCommandTranslationProvider:
 
     def __init__(self, main_directory):
         assert os.path.isdir(main_directory)
-        self.main_directory = main_directory
-        self.cache = {}
+        self._main_directory = main_directory
+        self._cache = {}
 
     def get_command_translation(self, command_name, arg1='') -> str:
 
         _hash = command_name + arg1
-        command_translation = self.cache.get(_hash)
+        command_translation = self._cache.get(_hash)
 
         if command_translation is None:
 
-            file_directory = self.get_source_directory(command_name, arg1)
+            file_directory = self._get_source_directory(command_name, arg1)
             with open(file_directory, 'r') as reader:
                 file_content = reader.readlines()
 
@@ -28,14 +28,14 @@ class VMCommandTranslationProvider:
                 significant_content.append(ParserHelper.remove_content_of_curly_brackets(ParserHelper.normalize(line)))
 
             command_translation = os.linesep.join(significant_content) + os.linesep
-            self.cache[_hash] = command_translation
+            self._cache[_hash] = command_translation
             reader.close()
 
         return command_translation
 
-    def get_source_directory(self, command_name, arg1='') -> str:
+    def _get_source_directory(self, command_name, arg1='') -> str:
 
-        file_directory = self.main_directory
+        file_directory = self._main_directory
 
         if command_name in ARITHMETIC_COMMANDS:
             file_directory += os.sep + 'arithmetic' + os.sep + command_name

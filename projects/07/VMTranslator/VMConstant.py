@@ -23,14 +23,6 @@ class VMCmd:
     C_INIT = 'init'
 
 
-ARITHMETIC_COMMANDS = [VMCmd.C_ADD, VMCmd.C_AND, VMCmd.C_EQ, VMCmd.C_GT,
-                       VMCmd.C_LT, VMCmd.C_NEG, VMCmd.C_NOT, VMCmd.C_OR, VMCmd.C_SUB]
-
-BRANCHING_COMMANDS = [VMCmd.C_LABEL, VMCmd.C_IF, VMCmd.C_GOTO]
-
-FUNCTION_COMMANDS = [VMCmd.C_CALL, VMCmd.C_FUNCTION, VMCmd.C_RETURN]
-
-
 class VMSegment:
     S_CONSTANT = 'constant'
     S_LOCAL = 'local'
@@ -41,6 +33,13 @@ class VMSegment:
     S_TEMP = 'temp'
     S_POINTER = 'pointer'
 
+
+ARITHMETIC_COMMANDS = [VMCmd.C_ADD, VMCmd.C_AND, VMCmd.C_EQ, VMCmd.C_GT,
+                       VMCmd.C_LT, VMCmd.C_NEG, VMCmd.C_NOT, VMCmd.C_OR, VMCmd.C_SUB]
+
+BRANCHING_COMMANDS = [VMCmd.C_LABEL, VMCmd.C_IF, VMCmd.C_GOTO]
+
+FUNCTION_COMMANDS = [VMCmd.C_CALL, VMCmd.C_FUNCTION, VMCmd.C_RETURN]
 
 TEMP_LOCATION_IN_RAM = 5
 

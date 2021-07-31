@@ -31,7 +31,7 @@ def remove_arbitrary_amount_of_whitespaces(line: str) -> str:
 
 def is_comment_or_empty(line: str) -> bool:
     line = line.strip()
-    return line == '' or (len(line) > 1 and line[0] == '/' and line[1] == '/')
+    return line == '' or (len(line) > 1 and line.startswith('//'))
 
 
 def is_empty(line: str) -> bool:

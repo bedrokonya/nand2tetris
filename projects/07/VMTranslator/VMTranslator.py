@@ -1,7 +1,7 @@
 import sys
 import os
 
-import OsPathHelper
+import OSPathHelper
 import ParserHelper
 from VMParser import VMParser
 from VMCodeWriter import VMCodeWriter
@@ -12,51 +12,50 @@ class VMTranslator:
 
         # calculating the name os the resulting .asm file
         # and finding the files which needed to be translated
-        self.files_to_process = []
-        self.is_bootstrap_needed = False
+        self._files_to_process = []
+        self._is_bootstrap_needed = False
 
         if os.path.isfile(vm_file_directory):
-
-            self.asm_file_name = OsPathHelper.removeExtension(vm_file_directory)
-            if OsPathHelper.getExtension(vm_file_directory) == 'vm':
-                self.files_to_process.append(vm_file_directory)
+            self._asm_file_name = OSPathHelper.remove_extension(vm_file_directory)
+            if OSPathHelper.get_extension(vm_file_directory) == 'vm':
+                self._files_to_process.append(vm_file_directory)
 
         elif os.path.isdir(vm_file_directory):
             self.is_bootstrap_needed = True
             basename = vm_file_directory.rsplit(os.sep, maxsplit=1)[-1]
-            self.asm_file_name = vm_file_directory + os.sep + basename
+            self._asm_file_name = vm_file_directory + os.sep + basename
 
             for filename in os.listdir(vm_file_directory):
-                if OsPathHelper.getExtension(filename) == 'vm':
-                    self.files_to_process.append(vm_file_directory + os.sep + filename)
+                if OSPathHelper.get_extension(filename) == 'vm':
+                    self._files_to_process.append(vm_file_directory + os.sep + filename)
 
-        if len(self.files_to_process) == 0:
+        if len(self._files_to_process) == 0:
             print(f'Nothing to translate in the passed directory: {vm_file_directory}')
             sys.exit(1)
 
-        self.asm_file_name += '.asm'
-        print(f'Resulting .asm file name: {self.asm_file_name}')
+        self._asm_file_name += '.asm'
+        print(f'Resulting .asm file name: {self._asm_file_name}')
 
-        self.code_writer = VMCodeWriter(self.asm_file_name, self.is_bootstrap_needed)
-        self.parser = None
+        self._code_writer = VMCodeWriter(self._asm_file_name, self._is_bootstrap_needed)
+        self._parser = None
 
     def translate(self):
 
-        for filename in self.files_to_process:
-            self.parser = VMParser(filename)
-            self.code_writer.setFileName(filename)
+        for filename in self._files_to_process:
+            self._parser = VMParser(filename)
+            self._code_writer.set_file_name(filename)
 
-            while self.parser.hasMoreCommands():
+            while self._parser.has_more_commands():
 
-                self.parser.advance()
-                if ParserHelper.is_comment_or_empty(self.parser.current_command):
+                self._parser.advance()
+                if ParserHelper.is_comment_or_empty(self._parser.current_command):
                     continue
 
-                self.code_writer.writeCommand(self.parser.getCurrentCommandArg0(),
-                                              self.parser.getCurrentCommandArg1(),
-                                              self.parser.getCurrentCommandArg2())
+                self._code_writer.write_command(self._parser.get_current_command_arg0(),
+                                               self._parser.get_current_command_arg1(),
+                                               self._parser.get_current_command_arg2())
 
-        self.code_writer.writeAsmFile()
+        self._code_writer.write_asm_file()
 
 
 if __name__ == "__main__":
@@ -69,4 +68,4 @@ if __name__ == "__main__":
 
     translator = VMTranslator(arguments[0])
     translator.translate()
-    print(translator.code_writer.result)
+    print(translator._code_writer.result)
