@@ -1,0 +1,38 @@
+/** Implements the emitter of pseudo-random numbers. 
+    It's pseudo-random as there is not any randomness in here,
+    but just a sequence of numbers packed in a method. */
+class PseudoRandomNumberGenerator {
+
+    field int A;
+    field int M;
+    field int prevNumber;
+
+    constructor PseudoRandomNumberGenerator new(int seed) {
+        let prevNumber = seed;
+        let A = 7;
+        let M = 2711;
+        return this;
+    }
+
+    method int rand() {
+        var int number;
+        let number = mod((prevNumber * A), M);
+        let prevNumber = mod(number, 4681);
+        return number;
+    }
+
+    method int randMod(int amod, int amin) {
+        var int number;
+        let number = mod(rand(), amod);
+        if (number < amin) {
+            let number = number + amin;
+        }
+        return number;
+    }
+
+    method int mod(int number, int divisor) {
+        var int result;
+        let result = number - ((number / divisor) * divisor);
+        return result;
+    }
+}

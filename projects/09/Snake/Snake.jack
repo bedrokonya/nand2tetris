@@ -1,0 +1,232 @@
+/** Implements a graphical snake, which implemented as a double-linked list with appropriate methods. */
+class Snake {
+
+   field SnakePart head;
+   field SnakePart tail;
+   field int length;
+
+   /** Constructs a new snake with length 1 and head located in the square with coordinates (x, y). */
+   constructor Snake new(int ax, int ay) {
+
+      var SnakePart initialPart;
+      let initialPart = SnakePart.new(ax, ay);
+
+      let head = initialPart;
+      let tail = initialPart;
+      let length = 1;
+      return this;
+   }
+
+   method SnakePart getHead() { return head; }
+   method int getLength() { return length; }
+
+   method void addLast(SnakePart value) {
+
+      let length = length + 1;
+      if (length = 1) {
+         let head = value;
+         let tail = value;
+         return;
+      }
+
+      do tail.setNext(value);
+      do value.setPrev(tail);
+      do value.setNext(null);
+      let tail = value;
+      return;
+   }
+
+   method void addFirst(SnakePart value) {
+
+      let length = length + 1;
+      if (length = 1) {
+         let head = value;
+         let tail = value;
+         return;
+      }
+
+      do head.setPrev(value);
+      do value.setNext(head);
+      do value.setPrev(null);
+      let head = value;
+      return;
+   }
+
+   method SnakePart removeLast() {
+
+      var SnakePart oldTail, newTail;
+
+      let length = length - 1;
+      if (length < 0) {
+         let length = 0;
+         return null;
+      }
+
+      let newTail = tail.getPrev();
+      do tail.setPrev(null);
+      let oldTail = tail;
+
+      if (length = 0) {
+         let head = null;
+         let tail = null;
+         return oldTail;
+      }
+
+      do newTail.setNext(null);
+      let tail = newTail;
+
+      return oldTail;
+   }
+
+   method SnakePart removeFirst() {
+
+      var SnakePart oldHead, newHead;
+
+      let length = length - 1;
+      if (length < 0) {
+         let length = 0;
+         return null;
+      }
+
+      let newHead = head.getNext();
+      do head.setNext(null);
+      let oldHead = head;
+
+      if (length = 0) {
+         let head = null;
+         let tail = null;
+         return oldHead;
+      }
+
+      do newHead.setPrev(null);
+      let head = newHead;
+
+      return oldHead;
+   }
+
+   // method boolean isNewHeadDirectionValid(int newDirection, int currentDirection) {
+      
+   //    if ((newDirection = 0) & (currentDirection = 1)) {
+   //       return false;
+   //    }
+   //    if ((newDirection = 1) & (currentDirection = 0)) {
+   //       return false;
+   //    }
+   //    if ((newDirection = 2) & (currentDirection = 3)) {
+   //       return false;
+   //    }
+   //    if ((newDirection = 3) & (currentDirection = 2)) {
+   //       return false;
+   //    }
+   //    return true;
+   // }
+
+   method boolean move(int direction) {
+
+      var int currentHeadX, currentHeadY, newHeadX, newHeadY, oldTailX, oldTailY, tailDirection, oldHeadDirection, fieldEntity;
+      var SnakePart newHead, oldHead, oldTail;
+      var boolean isOutOfMap, isSnakeCrashed;
+
+      if (length = 0 | length < 0) {
+         return false;
+      }
+
+      let currentHeadX = head.getX();
+      let currentHeadY = head.getY();
+
+      if (direction = SnakeGame.getUP()) { // up
+         let newHeadX = currentHeadX;
+         let newHeadY = currentHeadY - 1;
+      }
+      if (direction = SnakeGame.getDOWN()) { // down
+         let newHeadX = currentHeadX;
+         let newHeadY = currentHeadY + 1;
+      }
+      if (direction = SnakeGame.getLEFT()) { // left
+         let newHeadX = currentHeadX - 1;
+         let newHeadY = currentHeadY;
+      }
+      if (direction = SnakeGame.getRIGHT()) { // right
+         let newHeadX = currentHeadX + 1;
+         let newHeadY = currentHeadY;
+      }
+
+      let isOutOfMap = GridMap.checkIfOutOfMap(newHeadX, newHeadY);
+      let fieldEntity = GridMap.getEntityFromTheMap(newHeadX, newHeadY);
+      let isSnakeCrashed = ((fieldEntity = 3) | (fieldEntity = 1));
+
+      if (isOutOfMap | isSnakeCrashed) {
+         do head.drawExplosion(direction);
+         return false;
+      }
+
+      let oldTail = removeLast();
+      let oldTailX = oldTail.getX();
+      let oldTailY = oldTail.getY();
+      do GridMap.eraseGridSquare(oldTailX, oldTailY);
+
+      let newHead = oldTail;
+      do newHead.setXY(newHeadX, newHeadY);
+      let oldHead = head;
+
+      do addFirst(newHead);
+      do newHead.draw(direction);
+      do GridMap.markEntityOnTheMap(newHeadX, newHeadY, 1);
+
+      if (length > 1) {
+         let tailDirection = tail.getDirection();
+         do tail.draw(tailDirection);
+      }
+
+      if (length > 2) {
+         let oldHeadDirection = oldHead.getDirection();
+         do oldHead.draw(oldHeadDirection);
+      }
+
+      return true;
+   }
+
+   method void increase() {
+
+      var SnakePart newTail, oldTail;
+      var int oldTailDirection, newTailX, newTailY, oldTailX, oldTailY;
+      let oldTailDirection = tail.getDirection();
+      let oldTailX = tail.getX();
+      let oldTailY = tail.getY();
+
+      if (oldTailDirection = SnakeGame.getUP()) {
+         let newTailX = oldTailX;
+         let newTailY = oldTailY + 1;
+      }
+      if (oldTailDirection = SnakeGame.getDOWN()) {
+         let newTailX = oldTailX;
+         let newTailY = oldTailY - 1;
+      }
+      if (oldTailDirection = SnakeGame.getLEFT()) {
+         let newTailX = oldTailX + 1;
+         let newTailY = oldTailY;
+      }
+      if (oldTailDirection = SnakeGame.getRIGHT()) {
+         let newTailX = oldTailX - 1;
+         let newTailY = oldTailY;
+      }
+
+      let newTail = SnakePart.new(newTailX, newTailY);
+      let oldTail = tail;
+      do addLast(newTail);
+
+      do newTail.draw(oldTailDirection);
+      if (length > 2) {
+         do oldTail.draw(oldTailDirection);
+      }
+      return;
+   }
+
+   method void dispose() {
+      if (~(head = null)) {
+         do head.dispose();
+      }
+      do Memory.deAlloc(this);
+      return;
+   }
+}

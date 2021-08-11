@@ -1,0 +1,59 @@
+/** Implements a graphical apple. */
+class Apple {
+
+    static int TRANSPOSE_COEF;
+    field int x, y; /* location of the apple on the grid (512 / TRANSPOSE_COEF) x (256 / TRANSPOSE_COEF)
+                        where TRANSPOSE_COEF can be treated as width and height of the square on the grid */
+
+    // function void init(int coef) {
+    //     let TRANSPOSE_COEF = coef;
+    //     return;
+    // }
+
+    constructor Apple new(int ax, int ay) {
+        let x = ax;
+        let y = ay;
+        return this;
+    }
+
+    /** Accessors. */
+    method int getX() { return x; }
+    method int getY() { return y; }
+    method void setXY(int ax, int ay) { let x = ax; let y = ay; return; }
+
+
+    // method void erase() {
+    //     do Screen.setColor(false);
+    //     do Screen.drawRectangle(x*TRANSPOSE_COEF, y*TRANSPOSE_COEF, ((x+1)*TRANSPOSE_COEF)-1, ((y+1)*TRANSPOSE_COEF)-1);
+    //     return;
+    // }
+
+    method void draw() {
+
+        var int memAddress;
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
+
+        do Memory.poke(memAddress+0, 352);
+        do Memory.poke(memAddress+32, 448);
+        do Memory.poke(memAddress+64, 14748);
+        do Memory.poke(memAddress+96, 32126);
+        do Memory.poke(memAddress+128, -9);
+        do Memory.poke(memAddress+160, -13);
+        do Memory.poke(memAddress+192, -5);
+        do Memory.poke(memAddress+224, -1);
+        do Memory.poke(memAddress+256, -1);
+        do Memory.poke(memAddress+288, -1);
+        do Memory.poke(memAddress+320, -1);
+        do Memory.poke(memAddress+352, -1);
+        do Memory.poke(memAddress+384, 32766);
+        do Memory.poke(memAddress+416, 32766);
+        do Memory.poke(memAddress+448, 16380);
+        do Memory.poke(memAddress+480, 4080);
+        return;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
