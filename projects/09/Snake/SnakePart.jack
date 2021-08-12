@@ -1,16 +1,21 @@
-/** Represents a tuple of two integers */
+/** Represents a part of the snake (which in turn is implemented as classic double-linked List data sctructure)
+    thus SnakePart is an analogue to the Node in List.
+    Mostly this class contains optimized jack code with memory pokes for drawing different snake parts (head, tail or regular body part) */
 class SnakePart {
 
     static int TRANSPOSE_COEF;
-    field int x, y;          // screen location of the part's top-left corner
+    field int x, y;          // location of the SnakePart on the square grid
     field SnakePart next;
     field SnakePart prev;
-    field boolean isHead;
-    field int direction;
+    field int direction;    /* Direction represents vector of the SnakePart,
+                               which is needed in order to draw it properly
+                               (if this SnakePart is a head or a tail, then it is rendered differently
+                               from regular body part, which doesn't need direction as it's symmetrical across all axes)
+                               and also it's needed when snake is increased, to find out where new tail should be located. */
 
-    constructor SnakePart new(int Ax, int Ay) {
-        let x = Ax;
-        let y = Ay;
+    constructor SnakePart new(int ax, int ay) {
+        let x = ax;
+        let y = ay;
         let next = null;
         let prev = null;
         return this;
@@ -28,7 +33,7 @@ class SnakePart {
 
     method void draw(int adirection) {
 
-        do FieldMap.markOnTheMap(x, y, FieldMap.getSNAKE());
+        do GridMap.markEntityOnTheMap(x, y, GridMap.getSNAKE());
         let direction = adirection;
 
         do Screen.setColor(true);
@@ -47,11 +52,10 @@ class SnakePart {
 
     method void drawHead() {
 
-        var int location, memAddress;
-        let location = (32 * y * TRANSPOSE_COEF) + (x * TRANSPOSE_COEF / 16);
-        let memAddress = 16384 + location;
+        var int memAddress;
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
 
-        if (direction = 0) {
+        if (direction = SnakeGame.getUP()) {
 
             do Memory.poke(memAddress+0, 960);
             do Memory.poke(memAddress+32, 2016);
@@ -70,7 +74,7 @@ class SnakePart {
             do Memory.poke(memAddress+448, 6840);
             do Memory.poke(memAddress+480, 4080);
         }
-        if (direction = 1) {
+        if (direction = SnakeGame.getDOWN()) {
 
             do Memory.poke(memAddress+0, 4080);
             do Memory.poke(memAddress+32, 7512);
@@ -89,7 +93,7 @@ class SnakePart {
             do Memory.poke(memAddress+448, 2016);
             do Memory.poke(memAddress+480, 960);
         }
-        if (direction = 2) {
+        if (direction = SnakeGame.getLEFT()) {
 
             do Memory.poke(memAddress+0, 4032);
             do Memory.poke(memAddress+32, 6880);
@@ -108,7 +112,7 @@ class SnakePart {
             do Memory.poke(memAddress+448, 7520);
             do Memory.poke(memAddress+480, 4032);
         }
-        if (direction = 3) {
+        if (direction = SnakeGame.getRIGHT()) {
 
             do Memory.poke(memAddress+0, 1008);
             do Memory.poke(memAddress+32, 1720);
@@ -131,11 +135,11 @@ class SnakePart {
     }
 
     method void drawBodyPart() {
-        var int location, memAddress;
-        let location = (32 * y * TRANSPOSE_COEF) + (x * TRANSPOSE_COEF / 16);
-        let memAddress = 16384 + location;
 
-        if ((direction = 0) | (direction = 1)) {
+        var int memAddress;
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
+
+        if ((direction = SnakeGame.getUP()) | (direction = SnakeGame.getDOWN())) {
             do Memory.poke(memAddress+0, 4080);
             do Memory.poke(memAddress+32, 7512);
             do Memory.poke(memAddress+64, 15020);
@@ -154,7 +158,7 @@ class SnakePart {
             do Memory.poke(memAddress+480, 4080);
         }
 
-        if ((direction = 2) | (direction = 3)) {
+        if ((direction = SnakeGame.getLEFT()) | (direction = SnakeGame.getRIGHT())) {
             do Memory.poke(memAddress+0, 4080);
             do Memory.poke(memAddress+32, 7320);
             do Memory.poke(memAddress+64, 12876);
@@ -175,11 +179,95 @@ class SnakePart {
         return;
     }
 
-    method void drawExplosion(int adirection) {
+    method void drawTail() {
 
-        var int location, memAddress;
-        let location = (32 * y * TRANSPOSE_COEF) + (x * TRANSPOSE_COEF / 16);
-        let memAddress = 16384 + location;
+        var SnakePart prevPart;
+        var int prevPartDirection, memAddress;
+        let prevPart = getPrev();
+        let prevPartDirection = prevPart.getDirection();
+
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
+
+        if (prevPartDirection = SnakeGame.getUP()) {
+            do Memory.poke(memAddress+0, 4080);
+            do Memory.poke(memAddress+32, 7512);
+            do Memory.poke(memAddress+64, 15020);
+            do Memory.poke(memAddress+96, 24582);
+            do Memory.poke(memAddress+128, 30038);
+            do Memory.poke(memAddress+160, 27310);
+            do Memory.poke(memAddress+192, 24582);
+            do Memory.poke(memAddress+224, 13660);
+            do Memory.poke(memAddress+256, 15020);
+            do Memory.poke(memAddress+288, 6168);
+            do Memory.poke(memAddress+320, 3408);
+            do Memory.poke(memAddress+352, 2736);
+            do Memory.poke(memAddress+384, 1632);
+            do Memory.poke(memAddress+416, 960);
+            do Memory.poke(memAddress+448, 384);
+            do Memory.poke(memAddress+480, 384);
+        }
+        if (prevPartDirection = SnakeGame.getDOWN()) {
+            do Memory.poke(memAddress+0, 384);
+            do Memory.poke(memAddress+32, 384);
+            do Memory.poke(memAddress+64, 960);
+            do Memory.poke(memAddress+96, 1632);
+            do Memory.poke(memAddress+128, 3408);
+            do Memory.poke(memAddress+160, 2736);
+            do Memory.poke(memAddress+192, 6168);
+            do Memory.poke(memAddress+224, 13660);
+            do Memory.poke(memAddress+256, 15020);
+            do Memory.poke(memAddress+288, 24582);
+            do Memory.poke(memAddress+320, 30038);
+            do Memory.poke(memAddress+352, 27310);
+            do Memory.poke(memAddress+384, 24582);
+            do Memory.poke(memAddress+416, 13660);
+            do Memory.poke(memAddress+448, 6840);
+            do Memory.poke(memAddress+480, 4080);
+        }
+        if (prevPartDirection = SnakeGame.getLEFT()) {
+            do Memory.poke(memAddress+0, 0);
+            do Memory.poke(memAddress+32, 120);
+            do Memory.poke(memAddress+64, 508);
+            do Memory.poke(memAddress+96, 918);
+            do Memory.poke(memAddress+128, 3879);
+            do Memory.poke(memAddress+160, 5267);
+            do Memory.poke(memAddress+192, 14629);
+            do Memory.poke(memAddress+224, -7021);
+            do Memory.poke(memAddress+256, -5851);
+            do Memory.poke(memAddress+288, 13459);
+            do Memory.poke(memAddress+320, 6437);
+            do Memory.poke(memAddress+352, 3731);
+            do Memory.poke(memAddress+384, 934);
+            do Memory.poke(memAddress+416, 508);
+            do Memory.poke(memAddress+448, 120);
+            do Memory.poke(memAddress+480, 0);
+        }
+        if (prevPartDirection = SnakeGame.getRIGHT()) {
+            do Memory.poke(memAddress+0, 0);
+            do Memory.poke(memAddress+32, 7680);
+            do Memory.poke(memAddress+64, 16256);
+            do Memory.poke(memAddress+96, 26048);
+            do Memory.poke(memAddress+128, -13968);
+            do Memory.poke(memAddress+160, -23400);
+            do Memory.poke(memAddress+192, -14036);
+            do Memory.poke(memAddress+224, -23401);
+            do Memory.poke(memAddress+256, -14041);
+            do Memory.poke(memAddress+288, -23396);
+            do Memory.poke(memAddress+320, -14040);
+            do Memory.poke(memAddress+352, -6928);
+            do Memory.poke(memAddress+384, 27072);
+            do Memory.poke(memAddress+416, 16256);
+            do Memory.poke(memAddress+448, 7680);
+            do Memory.poke(memAddress+480, 0);
+        }
+        return;
+    }
+
+
+    method void drawExplosion() {
+
+        var int memAddress;
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
 
         do Memory.poke(memAddress+0, 0);
         do Memory.poke(memAddress+32, 0);
@@ -218,7 +306,7 @@ class SnakePart {
 
         do Sys.wait(300);
 
-        if (adirection = 0) {
+        if (direction = SnakeGame.getUP()) {
             do Memory.poke(memAddress+0, 960);
             do Memory.poke(memAddress+32, -15328);
             do Memory.poke(memAddress+64, 26640);
@@ -236,7 +324,7 @@ class SnakePart {
             do Memory.poke(memAddress+448, 6840);
             do Memory.poke(memAddress+480, 4080);
         }
-        if (adirection = 1) {
+        if (direction = SnakeGame.getDOWN()) {
             do Memory.poke(memAddress+0, 4080);
             do Memory.poke(memAddress+32, 7512);
             do Memory.poke(memAddress+64, 12836);
@@ -255,7 +343,7 @@ class SnakePart {
             do Memory.poke(memAddress+480, 960);
 
         }
-        if (adirection = 2) {
+        if (direction = SnakeGame.getLEFT()) {
             do Memory.poke(memAddress+0, 4034);
             do Memory.poke(memAddress+32, 4710);
             do Memory.poke(memAddress+64, 13340);
@@ -273,7 +361,7 @@ class SnakePart {
             do Memory.poke(memAddress+448, 7520);
             do Memory.poke(memAddress+480, 4032);
         }
-        if (adirection = 3) {
+        if (direction = SnakeGame.getRIGHT()) {
             do Memory.poke(memAddress+0, 1008);
             do Memory.poke(memAddress+32, 1720);
             do Memory.poke(memAddress+64, 2124);
@@ -291,100 +379,8 @@ class SnakePart {
             do Memory.poke(memAddress+448, 26184);
             do Memory.poke(memAddress+480, 17392);
         }
-
         return;
     }
-
-    method void drawTail() {
-
-        var SnakePart prevPart;
-        var int prevPartDirection, location, memAddress;
-        let prevPart = getPrev();
-        let prevPartDirection = prevPart.getDirection();
-
-        let location = (32 * y * TRANSPOSE_COEF) + (x * TRANSPOSE_COEF / 16);
-        let memAddress = 16384 + location;
-
-        if (prevPartDirection = 0) {
-            do Memory.poke(memAddress+0, 4080);
-            do Memory.poke(memAddress+32, 7512);
-            do Memory.poke(memAddress+64, 15020);
-            do Memory.poke(memAddress+96, 24582);
-            do Memory.poke(memAddress+128, 30038);
-            do Memory.poke(memAddress+160, 27310);
-            do Memory.poke(memAddress+192, 24582);
-            do Memory.poke(memAddress+224, 13660);
-            do Memory.poke(memAddress+256, 15020);
-            do Memory.poke(memAddress+288, 6168);
-            do Memory.poke(memAddress+320, 3408);
-            do Memory.poke(memAddress+352, 2736);
-            do Memory.poke(memAddress+384, 1632);
-            do Memory.poke(memAddress+416, 960);
-            do Memory.poke(memAddress+448, 384);
-            do Memory.poke(memAddress+480, 384);
-        }
-        if (prevPartDirection = 1) {
-            do Memory.poke(memAddress+0, 384);
-            do Memory.poke(memAddress+32, 384);
-            do Memory.poke(memAddress+64, 960);
-            do Memory.poke(memAddress+96, 1632);
-            do Memory.poke(memAddress+128, 3408);
-            do Memory.poke(memAddress+160, 2736);
-            do Memory.poke(memAddress+192, 6168);
-            do Memory.poke(memAddress+224, 13660);
-            do Memory.poke(memAddress+256, 15020);
-            do Memory.poke(memAddress+288, 24582);
-            do Memory.poke(memAddress+320, 30038);
-            do Memory.poke(memAddress+352, 27310);
-            do Memory.poke(memAddress+384, 24582);
-            do Memory.poke(memAddress+416, 13660);
-            do Memory.poke(memAddress+448, 6840);
-            do Memory.poke(memAddress+480, 4080);
-        }
-        if (prevPartDirection = 2) {
-            do Memory.poke(memAddress+0, 0);
-            do Memory.poke(memAddress+32, 120);
-            do Memory.poke(memAddress+64, 508);
-            do Memory.poke(memAddress+96, 918);
-            do Memory.poke(memAddress+128, 3879);
-            do Memory.poke(memAddress+160, 5267);
-            do Memory.poke(memAddress+192, 14629);
-            do Memory.poke(memAddress+224, -7021);
-            do Memory.poke(memAddress+256, -5851);
-            do Memory.poke(memAddress+288, 13459);
-            do Memory.poke(memAddress+320, 6437);
-            do Memory.poke(memAddress+352, 3731);
-            do Memory.poke(memAddress+384, 934);
-            do Memory.poke(memAddress+416, 508);
-            do Memory.poke(memAddress+448, 120);
-            do Memory.poke(memAddress+480, 0);
-        }
-        if (prevPartDirection = 3) {
-            do Memory.poke(memAddress+0, 0);
-            do Memory.poke(memAddress+32, 7680);
-            do Memory.poke(memAddress+64, 16256);
-            do Memory.poke(memAddress+96, 26048);
-            do Memory.poke(memAddress+128, -13968);
-            do Memory.poke(memAddress+160, -23400);
-            do Memory.poke(memAddress+192, -14036);
-            do Memory.poke(memAddress+224, -23401);
-            do Memory.poke(memAddress+256, -14041);
-            do Memory.poke(memAddress+288, -23396);
-            do Memory.poke(memAddress+320, -14040);
-            do Memory.poke(memAddress+352, -6928);
-            do Memory.poke(memAddress+384, 27072);
-            do Memory.poke(memAddress+416, 16256);
-            do Memory.poke(memAddress+448, 7680);
-            do Memory.poke(memAddress+480, 0);
-        }
-        return;
-    }
-
-    // method void erase() {
-    //     do Screen.setColor(false);
-    //     do Screen.drawRectangle(x*TRANSPOSE_COEF, y*TRANSPOSE_COEF, ((x+1)*TRANSPOSE_COEF)-1, ((y+1)*TRANSPOSE_COEF)-1);
-    //     return;
-    // }
 
     method void dispose() {
         if (~(next = null)) {

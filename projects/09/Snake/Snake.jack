@@ -104,23 +104,6 @@ class Snake {
       return oldHead;
    }
 
-   // method boolean isNewHeadDirectionValid(int newDirection, int currentDirection) {
-      
-   //    if ((newDirection = 0) & (currentDirection = 1)) {
-   //       return false;
-   //    }
-   //    if ((newDirection = 1) & (currentDirection = 0)) {
-   //       return false;
-   //    }
-   //    if ((newDirection = 2) & (currentDirection = 3)) {
-   //       return false;
-   //    }
-   //    if ((newDirection = 3) & (currentDirection = 2)) {
-   //       return false;
-   //    }
-   //    return true;
-   // }
-
    method boolean move(int direction) {
 
       var int currentHeadX, currentHeadY, newHeadX, newHeadY, oldTailX, oldTailY, tailDirection, oldHeadDirection, fieldEntity;
@@ -134,19 +117,19 @@ class Snake {
       let currentHeadX = head.getX();
       let currentHeadY = head.getY();
 
-      if (direction = SnakeGame.getUP()) { // up
+      if (direction = SnakeGame.getUP()) {
          let newHeadX = currentHeadX;
          let newHeadY = currentHeadY - 1;
       }
-      if (direction = SnakeGame.getDOWN()) { // down
+      if (direction = SnakeGame.getDOWN()) {
          let newHeadX = currentHeadX;
          let newHeadY = currentHeadY + 1;
       }
-      if (direction = SnakeGame.getLEFT()) { // left
+      if (direction = SnakeGame.getLEFT()) {
          let newHeadX = currentHeadX - 1;
          let newHeadY = currentHeadY;
       }
-      if (direction = SnakeGame.getRIGHT()) { // right
+      if (direction = SnakeGame.getRIGHT()) {
          let newHeadX = currentHeadX + 1;
          let newHeadY = currentHeadY;
       }
@@ -156,7 +139,7 @@ class Snake {
       let isSnakeCrashed = ((fieldEntity = 3) | (fieldEntity = 1));
 
       if (isOutOfMap | isSnakeCrashed) {
-         do head.drawExplosion(direction);
+         do head.drawExplosion();
          return false;
       }
 
@@ -171,8 +154,7 @@ class Snake {
 
       do addFirst(newHead);
       do newHead.draw(direction);
-      do GridMap.markEntityOnTheMap(newHeadX, newHeadY, 1);
-
+      
       if (length > 1) {
          let tailDirection = tail.getDirection();
          do tail.draw(tailDirection);

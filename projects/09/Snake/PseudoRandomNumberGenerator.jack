@@ -14,16 +14,12 @@ class PseudoRandomNumberGenerator {
         return this;
     }
 
-    method int rand() {
+    method int rand(int amin, int amax) {
         var int number;
         let number = mod((prevNumber * A), M);
         let prevNumber = mod(number, 4681);
-        return number;
-    }
 
-    method int randMod(int amod, int amin) {
-        var int number;
-        let number = mod(rand(), amod);
+        let number = mod(number, amax);
         if (number < amin) {
             let number = number + amin;
         }
@@ -31,8 +27,11 @@ class PseudoRandomNumberGenerator {
     }
 
     method int mod(int number, int divisor) {
-        var int result;
-        let result = number - ((number / divisor) * divisor);
-        return result;
+        return number - ((number / divisor) * divisor);
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
     }
 }

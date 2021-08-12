@@ -1,7 +1,5 @@
 
-/** Represents the grid of squares on the screen and remembers what each square contains.
-    Class is made static as I needed access to it from different locations in the code,
-    and I didn't want to pass it as an arguments everywhere */
+/** Represents the grid of squares on the screen and remembers what each square contains. */
 class GridMap {
 
     static int SQUARE_WIDTH; // the width of a single square in the grid
@@ -20,7 +18,7 @@ class GridMap {
     /** Initiates the constants and fills in the map with 0's. */
     function void init() {
 
-        var int i;
+        var int i, numberOfSquares;
 
         let EMPTY = 0;
         let SNAKE = 1;
@@ -47,29 +45,23 @@ class GridMap {
     function int getAPPLE() { return 2; }
     function int getWALL() { return 3; }
 
+    function int getXMAX() { return X_MAX; }
+    function int getYMAX() { return Y_MAX; }
+
     /** Calculates the array index of the square with coordinates (x, y). */
     function int getArrayIndexFromGridXY(int x, int y) {
-        var int arrayIndex;
-        let arrayIndex = (y * X_MAX) + x;
-        return arrayIndex;
+        return (y * X_MAX) + x;
     }
 
     /** Remembers that square of the grid with coordinates (x, y) contains specific entity. */
     function void markEntityOnTheMap(int x, int y, int entity) {
-
-        var int arrayIndex;
-        let arrayIndex = getArrayIndexFromGridXY(x, y);
-        let map[arrayIndex] = entity;
-
+        let map[GridMap.getArrayIndexFromGridXY(x, y)] = entity;
         return;
     }
 
     /** Shows which entity the square of the grid with coordinates (x, y) contains. */
     function int getEntityFromTheMap(int x, int y) {
-        var int result, arrayIndex;
-        let arrayIndex = getArrayIndexFromGridXY(x, y);
-        // let result = map[arrayIndex];
-        return map[arrayIndex];
+        return map[GridMap.getArrayIndexFromGridXY(x, y)];
     }
 
     /** Checks if square with coordinates (x, y) is out of grid. */
@@ -78,7 +70,7 @@ class GridMap {
         if ((y < 1) | (x < 0)) {
             return true;
         }
-        if ((y > (X_MAX - 1)) | (x > (Y_MAX - 1))) {
+        if ((y > (Y_MAX - 1)) | (x > (X_MAX - 1))) {
             return true;
         }
         return false;
@@ -89,11 +81,12 @@ class GridMap {
         var int location, memAddress;
         let location = (32 * y * SQUARE_WIDTH) + (x * SQUARE_WIDTH / 16);
         let memAddress = 16384 + location;
+        return memAddress;
     }
 
     /** Cleans everything that was drawed in the square with coordinates (x, y) and forgets which entity it containted */
     function void eraseGridSquare(int x, int y) {
-        do markEntityOnTheMap(x, y, 0);
+        do GridMap.markEntityOnTheMap(x, y, 0);
         do Screen.setColor(false);
         do Screen.drawRectangle(x*SQUARE_WIDTH, y*SQUARE_WIDTH, ((x+1)*SQUARE_WIDTH)-1, ((y+1)*SQUARE_WIDTH)-1);
         return;

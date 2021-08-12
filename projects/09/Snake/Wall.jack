@@ -1,55 +1,19 @@
+/** Implements a graphical wall. */
 class Wall {
 
-    static int TRANSPOSE_COEF;
-    field int x, y;
+    field int x, y; // location of the Wall on the square grid
 
-
-    // function void init(int coef) {
-    //     let TRANSPOSE_COEF = coef;
-    //     return;
-    // }
-
-    constructor Wall new(int Ax, int Ay) {
-        let x = Ax;
-        let y = Ay;
+    constructor Wall new(int ax, int ay) {
+        let x = ax;
+        let y = ay;
         return this;
-    }
-
-    function boolean checkIfNeghborsLessThan(int ax, int ay, int number) {
-
-        var int numOfNeighbourWalls, fieldValue, i , j, currentNeighborX, currentNeighborY;
-        var boolean isWall;
-        let numOfNeighbourWalls = 0;
-        let i = -1;
-        let j = -1;
-
-        while (~(i = 2)) {
-            let currentNeighborX = ax + i;
-            while (~(j = 2)) {
-                let currentNeighborY = ay + j;
-                let fieldValue = FieldMap.getFromTheMap(currentNeighborX, currentNeighborY);
-                let isWall = (fieldValue = 3);
-                if (isWall) {
-                    let numOfNeighbourWalls = numOfNeighbourWalls + 1;
-                }
-                let j = j + 1;
-            }
-            let i = i + 1;
-        }
-
-        if (numOfNeighbourWalls < number) {
-            return true;
-        }
-        else {
-            return false;
-        }
     }
 
     method void draw() {
 
-        var int location, memAddress;
-        let location = (32 * y * TRANSPOSE_COEF) + (x * TRANSPOSE_COEF / 16);
-        let memAddress = 16384 + location;
+        var int memAddress;
+        do GridMap.markEntityOnTheMap(x, y, GridMap.getWALL());
+        let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
 
         do Memory.poke(memAddress+0, 8224);
         do Memory.poke(memAddress+32, 8224);
@@ -70,10 +34,37 @@ class Wall {
         return;
     }
 
-    method void erase() {
-        do Screen.setColor(false);
-        do Screen.drawRectangle(x*TRANSPOSE_COEF, y*TRANSPOSE_COEF, ((x+1)*TRANSPOSE_COEF)-1, ((y+1)*TRANSPOSE_COEF)-1);
-        return;
+    /** Checks if the square with coordinates (ax, ay) has less neighbor walls than "number".
+        This is needed in order to generate walls in a way so that "closed rooms" would not appear on the map,
+        into which the snake could not enter. */
+    function boolean checkIfNeghborsLessThan(int ax, int ay, int number) {
+
+        var int numOfNeighbourWalls, entity, i , j, currentNeighborX, currentNeighborY;
+        var boolean isWall;
+        let numOfNeighbourWalls = 0;
+        let i = -1;
+        let j = -1;
+
+        while (~(i = 2)) {
+            let currentNeighborX = ax + i;
+            while (~(j = 2)) {
+                let currentNeighborY = ay + j;
+                let entity = GridMap.getEntityFromTheMap(currentNeighborX, currentNeighborY);
+                let isWall = (entity = GridMap.getWALL());
+                if (isWall) {
+                    let numOfNeighbourWalls = numOfNeighbourWalls + 1;
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+
+        if (numOfNeighbourWalls < number) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     method void dispose() {

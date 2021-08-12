@@ -1,14 +1,7 @@
 /** Implements a graphical apple. */
 class Apple {
 
-    static int TRANSPOSE_COEF;
-    field int x, y; /* location of the apple on the grid (512 / TRANSPOSE_COEF) x (256 / TRANSPOSE_COEF)
-                        where TRANSPOSE_COEF can be treated as width and height of the square on the grid */
-
-    // function void init(int coef) {
-    //     let TRANSPOSE_COEF = coef;
-    //     return;
-    // }
+    field int x, y; // location of the Apple on the square grid
 
     constructor Apple new(int ax, int ay) {
         let x = ax;
@@ -21,16 +14,10 @@ class Apple {
     method int getY() { return y; }
     method void setXY(int ax, int ay) { let x = ax; let y = ay; return; }
 
-
-    // method void erase() {
-    //     do Screen.setColor(false);
-    //     do Screen.drawRectangle(x*TRANSPOSE_COEF, y*TRANSPOSE_COEF, ((x+1)*TRANSPOSE_COEF)-1, ((y+1)*TRANSPOSE_COEF)-1);
-    //     return;
-    // }
-
     method void draw() {
 
         var int memAddress;
+        do GridMap.markEntityOnTheMap(x, y, GridMap.getAPPLE());
         let memAddress = GridMap.getSquareTopLeftCornerMemoryAddress(x, y);
 
         do Memory.poke(memAddress+0, 352);

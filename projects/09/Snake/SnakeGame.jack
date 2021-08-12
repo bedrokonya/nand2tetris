@@ -1,51 +1,55 @@
 /**
- * Implements the Square Dance game.
- * This simple game allows the user to move a black square around
- * the screen, and change the square's size during the movement.
- * When the game starts, a square of 30 by 30 pixels is shown at the
- * top-left corner of the screen. The user controls the square as follows.
- * The 4 arrow keys are used to move the square up, down, left, and right.
- * The 'z' and 'x' keys are used, respectively, to decrement and increment
- * the square's size. The 'q' key is used to quit the game.
+ * Implements the Snake game.
+ * This simple game allows the user to move a snake around
+ * the screen, and to increase snake by eating apples generated on the screen.
+ * If a snake collides with a wall, then game is over.
+ * When the game starts, a snake of length 1 (in grid coordinate system) is shown at the
+ * random location of the grid. The user controls the snake as follows.
+ * The 4 arrow keys are used to move the snake up, down, left, and right.
+ * The 'q' key is used to quit the game.
  */
 
 class SnakeGame {
 
-   // static int TRANSPOSE_COEF;
-   // static int X_MAX;
-   // static int Y_MAX;
    static int UP;
    static int DOWN;
    static int LEFT;
    static int RIGHT;
    static int MAX_WALLS_NUMBER;
-   static int MAX_LIVES_NUMBER;
 
-   field Snake snake; // the square of this game
+   static int X_INDENT;
+   static int Y_TOP_INDENT;
+   static int Y_BOTTOM_INDENT;
+
+   field Snake snake;
    field Apple apple;
-   field Array walls;
-   field int currentWallIndex;
-   field int currentDirection; // the snake's current direction: 
-                               // 0=up, 1=right, 2=down, 3=left
-   field PseudoRandomNumberGenerator numberGenerator;
+   field Array walls; // array for storing walls in order to dispose them properly in the end
+   field int currentWallIndex; // the index which denotes where exactly in array "walls" should be put the next created wall
+
+   field int currentDirection; // the snake's current direction
    field boolean isGameOver;
 
-   function void init() {
-      var int numberOfSquares;
+   field PseudoRandomNumberGenerator numberGenerator; // for generating coordinates while creating new entities on the map (walls and apples)
 
-      let MAX_WALLS_NUMBER = 40;
+   // Initiating the static constants of all classes
+   function void init() {
+
+      let MAX_WALLS_NUMBER = 40; // maximum amount of walls which will be generated on the map
+
+      // enumeration of possible directions for a snake
       let UP = 0;
       let DOWN = 1;
       let LEFT = 2;
       let RIGHT = 3;
-      // let X_MAX = 512 / TRANSPOSE_COEF;
-      // let Y_MAX = 256 / TRANSPOSE_COEF;
-      // do SnakePart.init(TRANSPOSE_COEF);
-      // do Apple.init(TRANSPOSE_COEF);
-      // do Wall.init(TRANSPOSE_COEF);
 
-      let numberOfSquares = X_MAX * Y_MAX;
+      // indents which will be used when coordinates for new walls and apples will be generated
+      let X_INDENT = 1;
+      let Y_BOTTOM_INDENT = 1;
+      let Y_TOP_INDENT = 2;
+
+      // initiating static constants in GridMap
       do GridMap.init();
+
       return;
    }
 
@@ -54,20 +58,20 @@ class SnakeGame {
    function int getLEFT() { return LEFT; }
    function int getRIGHT() { return RIGHT; }
 
-   /** Constructs a new Square Game. */
+   /** Constructs a new Snake game. */
    constructor SnakeGame new() {
 
-      var int snakeHeadX, snakeHeadY, numFieldSquare, i;
+      var int snakeHeadX, snakeHeadY;
 
       do createInitialScreen();
       let isGameOver = false;
-      let numberGenerator = PseudoRandomNumberGenerator.new(449);
+      let numberGenerator = PseudoRandomNumberGenerator.new(449); // 449 is just a random seed, there's no meaning behind it
 
       let currentWallIndex = 0;
       let walls = Array.new(MAX_WALLS_NUMBER);
 
-      let snakeHeadX = numberGenerator.randMod(X_MAX, 0);
-      let snakeHeadY = numberGenerator.randMod(Y_MAX, 2);
+      let snakeHeadX = numberGenerator.rand(X_INDENT, (GridMap.getXMAX() - X_INDENT));
+      let snakeHeadY = numberGenerator.rand(Y_TOP_INDENT, (GridMap.getYMAX() - Y_BOTTOM_INDENT));
       
       let snake = Snake.new(snakeHeadX, snakeHeadY);
       do createApple();
@@ -76,94 +80,134 @@ class SnakeGame {
    }
 
    method void createInitialScreen() {
-      var String scoreStr;
-      let scoreStr = "score:";
+
+      var String scoreStr, gameNameStr, quitStr;
+      let scoreStr = "Score:";
+      let gameNameStr = "*** SNAKE ***";
+      let quitStr = "[Q]uit";
+
       do Output.moveCursor(0, 2);
       do Output.printString(scoreStr);
-      do scoreStr.dispose();
 
       do Output.moveCursor(0, 9);
       do Output.printInt(0);
+
+      do Output.moveCursor(0, 26);
+      do Output.printString(gameNameStr);
+      do Output.moveCursor(0, 56);
+      do Output.printString(quitStr);
+
       do Screen.drawLine(0, 15, 511, 15);
+
+      do scoreStr.dispose();
+      do gameNameStr.dispose();
+      do quitStr.dispose();
+
       return;
    }
 
+   method void createGameOverScreen() {
+
+      var String gameOverStr;
+      let gameOverStr = "GAME OVER";
+      let isGameOver = true;
+
+      do Output.moveCursor(12, 27);
+      do Output.printString(gameOverStr);
+
+      do gameOverStr.dispose();
+
+      do Sys.wait(1000);
+      return;
+   }
+
+   /** Updates the score on the screen. */
    method void updateScore() {
       do Output.moveCursor(0, 9);
       do Output.printInt(snake.getLength() - 1);
       return;
    }
 
-   method void createWall() {
+   /** Generate valid coordinates (x, y) on the grid. Valid coordinates of an arbitrary square
+    means that this square doesn't contain any other entity (on in other words it's EMPTY). */
+   method Array generateValidCoordinates(int minX, int maxX, int minY, int maxY) {
+
       var boolean isEmptySquare, isCoordinatesValid;
-      var int wallX, wallY;
-      var Wall newWall;
+      var int x, y;
+      var Array coordinates;
 
+      let coordinates = Array.new(2);
       let isEmptySquare = false;
 
       while (~isCoordinatesValid) {
 
-         let wallX = numberGenerator.randMod(X_MAX - 1, 1);
-         let wallY = numberGenerator.randMod(Y_MAX - 1, 2);
-         let isEmptySquare = (FieldMap.getFromTheMap(wallX, wallY) = 0);
-
-         if (isEmptySquare & Wall.checkIfNeghborsLessThan(wallX, wallY, 2)) {
-            let isCoordinatesValid = true;
-         }
-      }
-
-      if (~(currentWallIndex = MAX_WALLS_NUMBER)) {
-         let newWall = Wall.new(wallX, wallY);
-         let walls[currentWallIndex] = newWall;
-         do FieldMap.markOnTheMap(wallX, wallY, 3);
-         do newWall.draw();
-         let currentWallIndex = currentWallIndex + 1;
-      }
-
-      return;
-   }
-
-   method void createApple() {
-
-      var boolean isEmptySquare, isCoordinatesValid, appleMaxX, appleMaxY;
-      var int appleX, appleY;
-
-      let isEmptySquare = false;
-      let appleMaxX = X_MAX - 1;
-      let appleMaxY = Y_MAX - 1;
-
-      while (~isCoordinatesValid) {
-
-         let appleX = numberGenerator.randMod(appleMaxX, 1);
-         let appleY = numberGenerator.randMod(appleMaxY, 2);
-         let isEmptySquare = (FieldMap.getFromTheMap(appleX, appleY) = 0);
+         let x = numberGenerator.rand(minX, maxX);
+         let y = numberGenerator.rand(minY, maxY);
+         let isEmptySquare = (GridMap.getEntityFromTheMap(x, y) = 0);
 
          if (isEmptySquare) {
             let isCoordinatesValid = true;
          }
       }
 
+      let coordinates[0] = x;
+      let coordinates[1] = y;
+
+      return coordinates;
+  }
+
+  /** Creates a wall and draws it on the screen. */
+   method void createWall() {
+
+      var boolean isAmountOfNeighborWallsValid;
+      var Wall newWall;
+      var Array coordinates;
+
+      let isAmountOfNeighborWallsValid = false;
+
+      while (~isAmountOfNeighborWallsValid) {
+         let coordinates = generateValidCoordinates(X_INDENT, (GridMap.getXMAX() - X_INDENT), Y_TOP_INDENT, (GridMap.getYMAX() - Y_BOTTOM_INDENT));
+         if (Wall.checkIfNeghborsLessThan(coordinates[0], coordinates[1], 2)) {
+            let isAmountOfNeighborWallsValid = true;
+         }
+         else {
+            do coordinates.dispose();
+         }
+      }
+
+      if (~(currentWallIndex = MAX_WALLS_NUMBER)) {
+
+         let newWall = Wall.new(coordinates[0], coordinates[1]);
+         let walls[currentWallIndex] = newWall;
+         do newWall.draw();
+
+         let currentWallIndex = currentWallIndex + 1;
+         do coordinates.dispose();
+      }
+
+      return;
+   }
+
+   /** Creates an apple and draws it on the screen. */
+   method void createApple() {
+
+      var Array coordinates;
+
+      let coordinates = generateValidCoordinates(1, (GridMap.getXMAX() - 1), 2, GridMap.getYMAX() - 1);
       if (~(apple = null)) {
-         // do apple.erase();
          do apple.dispose();
       }
 
-      let apple = Apple.new(appleX, appleY);
-      do FieldMap.markOnTheMap(appleX, appleY, 2);
+      let apple = Apple.new(coordinates[0], coordinates[1]);
       do apple.draw();
+      do coordinates.dispose();
       return;
    }
 
-   /** Disposes this game. */
-   method void dispose() {
-      do snake.dispose();
-      do Memory.deAlloc(this);
-      return;
-   }
-
-   /** Moves the square in the current direction. */
+   /** Moves the snake in the direction passed as an argument "adirection". */
    method void moveSnake(int adirection) {
-      var boolean isValidMove, isNewDirectionValid;
+
+      var boolean isSnakeCrashed, isNewDirectionValid;
       var int headDirection;
       var SnakePart snakeHead;
 
@@ -172,34 +216,32 @@ class SnakeGame {
 
       let isNewDirectionValid = isNewHeadDirectionValid(adirection, headDirection);
       if (isNewDirectionValid) {
-         let isValidMove = snake.move(adirection);
+         let isSnakeCrashed = snake.move(adirection);
       }
       else {
-         let isValidMove =  snake.move(headDirection);
-         do Output.printString("INVALID");
+         let isSnakeCrashed =  snake.move(headDirection);
       }
-      if (~isValidMove) {
+
+      if (~isSnakeCrashed) {
          do createGameOverScreen();
       }
+
       return;
    }
 
+   /** Inscreases the snake after she took an apple. */
    method void increaseSnake() {
       do snake.increase();
       return;
    }
 
+   /** Checks if after the last snake's move snake took an apple. */
    method boolean isSnakeTookApple() {
+
       var SnakePart snakeHead;
-      var int snakeHeadX, snakeHeadY, appleX, appleY;
-
       let snakeHead = snake.getHead();
-      let snakeHeadX = snakeHead.getX();
-      let snakeHeadY = snakeHead.getY();
-      let appleX = apple.getX();
-      let appleY = apple.getY();
 
-      if ((snakeHeadX = appleX) & (snakeHeadY = appleY)) {
+      if ((snakeHead.getX() = apple.getX()) & (snakeHead.getY() = apple.getY())) {
          return true;
       }
       else {
@@ -207,7 +249,11 @@ class SnakeGame {
       }
    }
 
+   /** Checks that "newDirection" is valid relatively to the "currentDirection" 
+       (direction here is relative to you, the observer). 
+       For example a snake can't go right if it's currently moving left -- it can only go further left, up or down. */
    method boolean isNewHeadDirectionValid(int newDirection, int currentDirection) {
+
       if ((newDirection = UP) & (currentDirection = DOWN)) {
          return false;
       }
@@ -223,7 +269,10 @@ class SnakeGame {
       return true;
    }
 
-   /** Runs the game: handles the user's inputs and moves the square accordingly */
+   /** Runs the game: 
+      handles the user's inputs, 
+      moves the snake accordingly
+      and manages the game logic */
    method void run() {
 
       var char key;  // the key currently pressed by the user
@@ -234,10 +283,11 @@ class SnakeGame {
       let timePassedSinceLastDraw = 0;
       
       while ((~exit) & (~isGameOver)) {
-
-         let timePassedSinceLastDraw = timePassedSinceLastDraw + 1;
+         
          let key = Keyboard.keyPressed();
-         if (timePassedSinceLastDraw = 200) {
+         let timePassedSinceLastDraw = timePassedSinceLastDraw + 1;
+
+         if (timePassedSinceLastDraw = 150) {
             do moveSnake(currentDirection);
             let isSnakeTookApple = isSnakeTookApple();
             if (isSnakeTookApple) {
@@ -249,11 +299,11 @@ class SnakeGame {
             }
             let timePassedSinceLastDraw = 0;
          }
-         
-         if (key = 81)  { let exit = true; }     // q key
-         if (key = 131) { let currentDirection = UP; }   // up arrow
-         if (key = 133) { let currentDirection = DOWN; }   // down arrow
-         if (key = 130) { let currentDirection = LEFT; }   // left arrow
+
+         if (key = 81)  { let exit = true; }                // q key
+         if (key = 131) { let currentDirection = UP; }      // up arrow
+         if (key = 133) { let currentDirection = DOWN; }    // down arrow
+         if (key = 130) { let currentDirection = LEFT; }    // left arrow
          if (key = 132) { let currentDirection = RIGHT; }   // right arrow
 
          do Sys.wait(1);
@@ -261,15 +311,14 @@ class SnakeGame {
       return;
    }
 
+      /** Disposes this game. */
+      method void dispose() {
 
-   method void createGameOverScreen() {
-      var String gameOverStr;
-      let gameOverStr = "GAME OVER";
-      let isGameOver = true;
-
-      do Output.moveCursor(12, 27);
-      do Output.printString(gameOverStr);
-      do Sys.wait(1000);
-      return;
-   }
+         do snake.dispose();
+         do apple.dispose();
+         do walls.dispose();
+         do numberGenerator.dispose();
+         do Memory.deAlloc(this);
+         return;
+      }
 }
