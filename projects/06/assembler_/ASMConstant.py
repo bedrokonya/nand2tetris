@@ -3,6 +3,7 @@ class ASMConstant:
 
     COMMAND_C_MSB = '1'
     COMMAND_A_MSB = '0'
+    C_COMMAND_PREFIX = '11'
     ADDRESS_MAX = 24576
     ADDRESS_MAX_LENGTH = 15
 
