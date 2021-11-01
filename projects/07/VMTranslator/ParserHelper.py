@@ -1,7 +1,7 @@
 import re
 
 
-def normalize(line: str):
+def normalize(line: str) -> str:
     """
     S.normalize(line) -> str
 

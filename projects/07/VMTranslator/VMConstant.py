@@ -1,3 +1,4 @@
+import typing as tp
 
 IMPLEMENTATION_DIRECTORY = 'HackImplementation'
 
@@ -34,16 +35,16 @@ class VMSegment:
     S_POINTER = 'pointer'
 
 
-ARITHMETIC_COMMANDS = [VMCmd.C_ADD, VMCmd.C_AND, VMCmd.C_EQ, VMCmd.C_GT,
-                       VMCmd.C_LT, VMCmd.C_NEG, VMCmd.C_NOT, VMCmd.C_OR, VMCmd.C_SUB]
+ARITHMETIC_COMMANDS: tp.List[str] = [VMCmd.C_ADD, VMCmd.C_AND, VMCmd.C_EQ, VMCmd.C_GT, VMCmd.C_LT,
+                                     VMCmd.C_NEG, VMCmd.C_NOT, VMCmd.C_OR, VMCmd.C_SUB]
 
-BRANCHING_COMMANDS = [VMCmd.C_LABEL, VMCmd.C_IF, VMCmd.C_GOTO]
+BRANCHING_COMMANDS: tp.List[str] = [VMCmd.C_LABEL, VMCmd.C_IF, VMCmd.C_GOTO]
 
-FUNCTION_COMMANDS = [VMCmd.C_CALL, VMCmd.C_FUNCTION, VMCmd.C_RETURN]
+FUNCTION_COMMANDS: tp.List[str] = [VMCmd.C_CALL, VMCmd.C_FUNCTION, VMCmd.C_RETURN]
 
-TEMP_LOCATION_IN_RAM = 5
+TEMP_LOCATION_IN_RAM: int = 5
 
-SEGMENT_TRANSLATION = {'local': 'LCL',
-                       'argument': 'ARG',
-                       'this': 'THIS',
-                       'that': 'THAT'}
+SEGMENT_TRANSLATION: tp.Dict[str, str] = {'local': 'LCL',
+                                          'argument': 'ARG',
+                                          'this': 'THIS',
+                                          'that': 'THAT'}

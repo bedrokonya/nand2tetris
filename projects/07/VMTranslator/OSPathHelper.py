@@ -1,9 +1,9 @@
 import os
 
 
-def remove_extension(path: str):
+def remove_extension(path: str) -> str:
     return path.rsplit(os.extsep, maxsplit=1)[0].strip()
 
 
-def get_extension(path: str):
+def get_extension(path: str) -> str:
     return path.rsplit(os.extsep, maxsplit=1)[-1].strip()

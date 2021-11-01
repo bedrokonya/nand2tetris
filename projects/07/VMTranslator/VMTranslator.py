@@ -11,7 +11,7 @@ class VMTranslator:
     def __init__(self, vm_file_directory):
 
         # calculating the name os the resulting .asm file
-        # and finding the files which needed to be translated
+        # and finding the .vm files which needed to be translated
         self._files_to_process = []
         self._is_bootstrap_needed = False
 
@@ -56,16 +56,17 @@ class VMTranslator:
                                                self._parser.get_current_command_arg2())
 
         self._code_writer.write_asm_file()
+        print(self._code_writer.result)
 
 
 if __name__ == "__main__":
 
     arguments = sys.argv[1:]
     if len(arguments) != 1:
-        print("Usage: python VMTranslator.py [file] "
-              "\nfile: some .vm file which needed to be translated into Hack assembly language")
+        print("Usage: python VMTranslator.py [file.vm] | [local_directory] "
+              "\nfile: some .vm file which needed to be translated into Hack assembly language"
+              "\nlocal_directory: directory containing multiple .vm files")
         sys.exit(1)
 
     translator = VMTranslator(arguments[0])
     translator.translate()
-    print(translator._code_writer.result)
